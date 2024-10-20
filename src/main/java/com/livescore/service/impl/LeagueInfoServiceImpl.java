@@ -7,11 +7,9 @@ import com.livescore.dto.api.football.league.LeagueInfoDTO;
 import com.livescore.dto.response.TopLeagueResponse;
 import com.livescore.entity.Country;
 import com.livescore.entity.LeagueInfo;
-import com.livescore.entity.TopLeagueConfiguration;
 import com.livescore.integration.ApiFootballServiceClient;
 import com.livescore.repository.CountryRepository;
 import com.livescore.repository.LeagueInfoRepository;
-import com.livescore.repository.TopLeagueConfigurationRepository;
 import com.livescore.service.LeagueInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +24,6 @@ public class LeagueInfoServiceImpl implements LeagueInfoService {
 
     @Autowired
     private LeagueInfoRepository leagueInfoRepository;
-
-    @Autowired
-    private TopLeagueConfigurationRepository topLeagueConfigurationRepository;
 
     @Autowired
     private CountryRepository countryRepository;
@@ -80,25 +75,27 @@ public class LeagueInfoServiceImpl implements LeagueInfoService {
 
     @Override
     public List<TopLeagueResponse> getTopLeagues() {
-        List<TopLeagueConfiguration> topLeaguesConfig = topLeagueConfigurationRepository.findAllByOrderByPriority();
+        List<LeagueInfo> leagueInfoList = leagueInfoRepository.findAllByPriorityNotNullOrderByPriority();
 
         List<TopLeagueResponse> topLeagueResponseList = new ArrayList<>();
 
-        for(TopLeagueConfiguration topLeagueConfiguration : topLeaguesConfig){
-            LeagueInfo leagueInfo =  leagueInfoRepository.findById(topLeagueConfiguration.getLeagueId()).orElse(null);
-            TopLeagueResponse topLeagueResponse = new TopLeagueResponse();
-            topLeagueResponse.setId(leagueInfo.getId());
-            topLeagueResponse.setName(leagueInfo.getName());
-            topLeagueResponse.setType(leagueInfo.getType());
-            topLeagueResponse.setLogo(leagueInfo.getLogo());
-            topLeagueResponse.setCountry(leagueInfo.getCountry());
-            topLeagueResponse.setCountryCode(leagueInfo.getCountryCode());
-            topLeagueResponse.setCountryFlag(leagueInfo.getCountryFlag());
-
+        for(LeagueInfo leagueInfo : leagueInfoList){
+            TopLeagueResponse topLeagueResponse = getTopLeagueResponse(leagueInfo);
             topLeagueResponseList.add(topLeagueResponse);
-
         }
 
         return topLeagueResponseList;
+    }
+
+    private static TopLeagueResponse getTopLeagueResponse(LeagueInfo leagueInfo) {
+        TopLeagueResponse topLeagueResponse = new TopLeagueResponse();
+        topLeagueResponse.setId(leagueInfo.getId());
+        topLeagueResponse.setName(leagueInfo.getName());
+        topLeagueResponse.setType(leagueInfo.getType());
+        topLeagueResponse.setLogo(leagueInfo.getLogo());
+        topLeagueResponse.setCountry(leagueInfo.getCountry());
+        topLeagueResponse.setCountryCode(leagueInfo.getCountryCode());
+        topLeagueResponse.setCountryFlag(leagueInfo.getCountryFlag());
+        return topLeagueResponse;
     }
 }

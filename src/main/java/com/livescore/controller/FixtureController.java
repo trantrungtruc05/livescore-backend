@@ -1,18 +1,16 @@
 package com.livescore.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.livescore.constants.CommonConstant;
 import com.livescore.dto.api.football.fixtures.FixtureDTO;
-import com.livescore.dto.api.football.fixtures.FixtureDetailDTO;
 import com.livescore.dto.api.football.fixtures.FixtureResultDTO;
-import com.livescore.dto.api.football.fixtures.LeagueFixtureDTO;
 import com.livescore.dto.response.CoreApiResponse;
+import com.livescore.dto.response.DateListDTO;
 import com.livescore.dto.response.MatchDetailResponse;
 import com.livescore.dto.response.MatchInfoResponse;
-import com.livescore.entity.TopLeagueConfiguration;
+import com.livescore.entity.LeagueInfo;
 import com.livescore.integration.ApiFootballServiceClient;
-import com.livescore.repository.TopLeagueConfigurationRepository;
+import com.livescore.repository.LeagueInfoRepository;
 import com.livescore.utils.DateTimeConvertUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,9 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -35,28 +31,36 @@ public class FixtureController {
 
     private final ApiFootballServiceClient apiFootballServiceClient;
 
-    private final TopLeagueConfigurationRepository topLeagueConfigurationRepository;
+    private final LeagueInfoRepository leagueInfoRepository;
 
     @GetMapping(path = CommonConstant.API_FOOTBALL_FIXTURES)
     public ResponseEntity<CoreApiResponse> topLeague() throws JsonProcessingException {
 
-        FixtureResultDTO fixtures = apiFootballServiceClient.getFixtures(2024, "2024-10-19", "Asia/Ho_Chi_Minh");
-        List<TopLeagueConfiguration> topLeagueConfigurationList = topLeagueConfigurationRepository.findAllByOrderByPriority();
-        fixtures.setResponse(fixtures.getResponse().stream().filter(fixtureDTO -> topLeagueConfigurationList.stream().anyMatch(topLeagueConfiguration -> topLeagueConfiguration.getLeagueId() == fixtureDTO.getLeague().getId()))
+        FixtureResultDTO fixtures = apiFootballServiceClient.getFixtures(2024, "2024-10-20", "Asia/Ho_Chi_Minh");
+        List<LeagueInfo> leagueInfoList = leagueInfoRepository.findAllByOrderByPriority();
+        fixtures.setResponse(fixtures.getResponse().stream()
                         .sorted((s1, s2) -> {
-                            int priority1 = topLeagueConfigurationList.stream()
-                                    .filter(ageInfo -> ageInfo.getLeagueId() == s1.getLeague().getId())
+                            Integer priority1 = leagueInfoList.stream()
+                                    .filter(leagueInfo -> leagueInfo.getId() == s1.getLeague().getId())
                                     .findFirst()
                                     .get()
                                     .getPriority();
 
-                            int priority2 = topLeagueConfigurationList.stream()
-                                    .filter(ageInfo -> ageInfo.getLeagueId() == s2.getLeague().getId())
+                            Integer priority2 = leagueInfoList.stream()
+                                    .filter(leagueInfo -> leagueInfo.getId() == s2.getLeague().getId())
                                     .findFirst()
                                     .get()
                                     .getPriority();
 
-                            return Integer.compare(priority1, priority2);
+                            if (priority1 == null && priority2 == null) {
+                                return 0;
+                            } else if (priority1 == null) {
+                                return 1;
+                            } else if (priority2 == null) {
+                                return -1;
+                            } else {
+                                return Integer.compare(priority1, priority2);
+                            }
                         })
                 .collect(Collectors.toList()));
 
@@ -107,13 +111,16 @@ public class FixtureController {
     public ResponseEntity<CoreApiResponse> getListOfDay() {
 
         LocalDate today = LocalDate.now();
-        List<String> dateList = new ArrayList<>();
+        List<DateListDTO> dateList = new ArrayList<>();
 
         // Tạo danh sách các ngày từ today - 7 đến today + 7
         for (int i = -7; i <= 7; i++) {
+
             LocalDate date = today.plusDays(i);
-            String formattedDate = DateTimeConvertUtil.formatDateddMM(date);
-            dateList.add(formattedDate);
+            String value = DateTimeConvertUtil.formatDateyyyyMMdd(date);
+            String text = DateTimeConvertUtil.formatDateddMM(date);
+
+            dateList.add(new DateListDTO(value, text));
         }
 
         CoreApiResponse coreApiResponse = new CoreApiResponse(CommonConstant.CODE_API_SUCCESS, HttpStatus.OK.value(), dateList);

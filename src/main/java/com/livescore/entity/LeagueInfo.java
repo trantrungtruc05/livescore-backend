@@ -37,4 +37,7 @@ public class LeagueInfo extends AbstractAuditEntity {
 
     @Column(name = "country_flag")
     private String countryFlag;
+
+    @Column(name = "priority")
+    private Integer priority;
 }

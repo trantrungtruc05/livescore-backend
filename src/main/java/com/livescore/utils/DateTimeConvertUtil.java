@@ -14,4 +14,11 @@ public class DateTimeConvertUtil {
 
         return datePart + " " + dayOfWeek;
     }
+
+    public static String formatDateyyyyMMdd(LocalDate date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedDate = date.format(formatter);
+
+        return formattedDate;
+    }
 }
