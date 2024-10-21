@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
@@ -34,9 +35,9 @@ public class FixtureController {
     private final LeagueInfoRepository leagueInfoRepository;
 
     @GetMapping(path = CommonConstant.API_FOOTBALL_FIXTURES)
-    public ResponseEntity<CoreApiResponse> topLeague() throws JsonProcessingException {
+    public ResponseEntity<CoreApiResponse> listFixtureByCondition(@RequestParam(value = "season", required = false) Integer season, @RequestParam(value = "date", required = false) String date, @RequestParam(value = "status", required = false) String status, @RequestParam(value = "live", required = false) String live, @RequestParam("timezone") String timezone) {
 
-        FixtureResultDTO fixtures = apiFootballServiceClient.getFixtures(2024, "2024-10-20", "Asia/Ho_Chi_Minh");
+        FixtureResultDTO fixtures = apiFootballServiceClient.getFixtures(season, date, status, live, timezone);
         List<LeagueInfo> leagueInfoList = leagueInfoRepository.findAllByOrderByPriority();
         fixtures.setResponse(fixtures.getResponse().stream()
                         .sorted((s1, s2) -> {

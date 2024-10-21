@@ -20,5 +20,5 @@ public interface ApiFootballServiceClient {
     CountryDTO getCountries();
 
     @GetMapping(path = CommonConstant.API_FOOTBALL_FIXTURES)
-    FixtureResultDTO getFixtures(@RequestParam("season") int season, @RequestParam("date") String date, @RequestParam("timezone") String timezone);
+    FixtureResultDTO getFixtures(@RequestParam(value = "season", required = false) Integer season, @RequestParam(value = "date", required = false) String date, @RequestParam(value = "status", required = false) String status, @RequestParam(value = "live", required = false) String live, @RequestParam("timezone") String timezone);
 }
