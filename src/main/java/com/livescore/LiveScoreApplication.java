@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class LiveScoreApplication {
 
 	public static void main(String[] args) {
-		log.info("Start application success OK");
+		log.info("Start application success");
 		SpringApplication.run(LiveScoreApplication.class, args);
 	}
 
