@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livescore-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: livescore-backend
+  template:
+    metadata:
+      labels:
+        app: livescore-backend
+    spec:
+      containers:
+        - name: livescore-backend
+          image: 378618295669.dkr.ecr.ap-southeast-1.amazonaws.com/livescore-backend:latest
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: livescore-backend-service
+spec:
+  selector:
+    app: livescore-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer

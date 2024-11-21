@@ -1,6 +1,5 @@
 package com.livescore.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.livescore.constants.CommonConstant;
 import com.livescore.dto.api.football.fixtures.FixtureDTO;
 import com.livescore.dto.api.football.fixtures.FixtureResultDTO;
@@ -13,6 +12,7 @@ import com.livescore.integration.ApiFootballServiceClient;
 import com.livescore.repository.LeagueInfoRepository;
 import com.livescore.utils.DateTimeConvertUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(CommonConstant.API_VERSION)
 @RequiredArgsConstructor
+@Slf4j
 public class FixtureController {
 
     private final ApiFootballServiceClient apiFootballServiceClient;

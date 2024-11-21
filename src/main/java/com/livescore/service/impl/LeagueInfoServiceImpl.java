@@ -11,8 +11,10 @@ import com.livescore.integration.ApiFootballServiceClient;
 import com.livescore.repository.CountryRepository;
 import com.livescore.repository.LeagueInfoRepository;
 import com.livescore.service.LeagueInfoService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +23,9 @@ import java.util.List;
 @Service
 @Slf4j
 public class LeagueInfoServiceImpl implements LeagueInfoService {
+
+    @Value("${league.priority-config}")
+    private String prorityConfig;
 
     @Autowired
     private LeagueInfoRepository leagueInfoRepository;
@@ -32,6 +37,7 @@ public class LeagueInfoServiceImpl implements LeagueInfoService {
     private ApiFootballServiceClient apiFootballServiceClient;
 
     @Override
+    @Transactional
     public void createLeagueInfo() {
 
         LeagueDTO leagueDTO = apiFootballServiceClient.getLeagues();
@@ -39,6 +45,7 @@ public class LeagueInfoServiceImpl implements LeagueInfoService {
         int size = leagueDTO.getResponse().size();
 
         log.info("START get info leagues ...");
+        leagueInfoRepository.deleteAll();
         for(LeagueInfoDTO responseDTO : leagueDTO.getResponse()){
 
             log.info("GET INFO LEAGUE remain : {} ", size);
@@ -61,6 +68,7 @@ public class LeagueInfoServiceImpl implements LeagueInfoService {
         }
 
         log.info("START get info country ...");
+        countryRepository.deleteAll();
 
         CountryDTO countryDTO = apiFootballServiceClient.getCountries();
         for(CountryInfoDTO responseDTO : countryDTO.getResponse()){
@@ -68,6 +76,11 @@ public class LeagueInfoServiceImpl implements LeagueInfoService {
             countryRepository.save(country);
         }
 
+
+        // update priority league
+        for(String s : prorityConfig.split(";")){
+            leagueInfoRepository.updatePriorityLeagueInfo(Integer.parseInt(s.split("-")[1]), Integer.parseInt(s.split("-")[0]));
+        }
 
 
 
